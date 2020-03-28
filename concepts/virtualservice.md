@@ -47,7 +47,7 @@ spec:
 - **tcp**：非必配项，配置一个 TCPRoute[] 类型的值，专门用于 TCP 协议请求的路由规则匹配。这个配置项的优先级较低，当请求既不是一个 HTTP 类型请求，也不是一个 TLS 类型请求的时候，才会进入到该配置项中进行匹配。
 - **exportTo**：非必配项，配置一个 String[] 类型的值， 表示该 VirtualService 应用在哪些 Namespace 下面。而应用到哪些 Namespace 下则表示别的 Namespace 下的请求将无法访问该 VirtualService，而该 VirtualService 也无法托管其他 Namespace下的 service 。如果不设置，则表示当前 VirtualService 应用到所有的 Namespace下。
   - “.”  表示该 VirtualService 只应用到当前的 Namespace 下。
-  - “*”  表示应用到所有的namespace下。
+  - “*”  表示应用到所有的Namespace下。
 
 ### HTTPRoute：
 

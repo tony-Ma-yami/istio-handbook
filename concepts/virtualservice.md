@@ -59,7 +59,7 @@ spec:
 - **timeout**：非必配项，HTTP请求的超时时间。
 - **retries**：非必配项，配置一个 HTTPRetry 类型的对象，表示请求失败后的重试策略。
 - **fault**：非必配项，配置一个 HTTPFaultInjection 类型的对象，表示对该请求进行配置故障注入配置。一般在开发阶段及性能测试阶段使用，通过该配置就可以模拟当你的服务所依赖的上游服务出现响应超时或者返回异常的时候你的异常处理机制是否完善。
-- **mirror**：非必配项，配置一个 Destination 类型的对象，配合一个[0-100]的数值。表示将该请求的流量镜像到别的服务中去。通过此项配置通过镜像复制流量可以很好的调试开发测试坏境无法复现的产品环境问题。当然在实际开发过程中，这种选择仍然是备用选择，最好的方式还是通过收集日志去分析线程的异常问题。
+- **mirror**：非必配项，配置一个 Destination 类型的对象。表示将该请求的流量镜像到别的服务中去。通过此项配置通过镜像复制流量可以很好的调试开发测试坏境无法复现的产品环境问题。当然在实际开发过程中，这种选择仍然是备用选择，最好的方式还是通过收集日志去分析线程的异常问题。
 - **mirrorPercent**：非必配项，配置一个 UInt32Value 类型的值。与 mirror 配置成对出现，表示需要镜像原始流量的占比。比如100表示将所有流量全部镜像到你在 mirror 中配置的服务中去。
 - **corsPolicy**：非必配项，CORS跨域（Cross-Origin Resource Sharing）访问的策略配置，此配置用来解决在多个 Domain 访问该 VirtualService 的访问策略。
 - **headers**：非必配项，配置一个 Headers 类型的对象，操作 Header 中信息的增删改。包括 Request Header 和 Response Header 。
@@ -200,33 +200,6 @@ spec:
     - destination:
         host: ratings.prod.svc.cluster.local
         subset: v1
-```
-
-### HTTPRetry：
-
-- **attempts**：必配项，代表重试次数，表示当请求失败后经过多少次重试之后放弃。
-- **perTryTimeout**：非必配项，表示重试请求的超时时间，格式为：1h/1m/1s/1ms， 最小不能小于1ms。
-- **retryOn**：非必配项，表示在什么情况下进行重试，如果有多个重试条件，使用 “，” 隔开。更多详细配置参考：https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-on 以及https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-grpc-on。
-
-以下配置表示：对 ratings.prod.svc.cluster.local 服务发送的请求，当失败时，最多进行3次重试，重试间隔时间为 2s，并且只有当出现 gateway-error，connect-failure，refused-stream 这三种异常时才进行重试。
-
-```yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: ratings-route
-spec:
-  hosts:
-  - ratings.prod.svc.cluster.local
-  http:
-  - route:
-    - destination:
-        host: ratings.prod.svc.cluster.local
-        subset: v1
-    retries:
-      attempts: 3
-      perTryTimeout: 2s
-      retryOn: gateway-error，connect-failure，refused-stream
 ```
 
 ### CorsPolicy：
@@ -407,73 +380,7 @@ spec:
         host: wikipedia.org
 ```
 
-### HTTPFaultInjection：
 
-在一个微服务架构的服务群中，一定存在部分服务有着较高的健壮性要求，比如电商中的订单系统，当订单相关的服务出现异常时，一般需要第一时间通知维护人员，这就要求对于服务的异常处理以及监听方面要求很高。从运维方面，我们可以对服务订单服务的相关主机或者云虚拟主机的 CPU，内存等重要指标进行监听，若发现异常，以短信、消息或者邮件的方式告知。另一方面，若程序内部访问异常，那么服务也要第一时间通知到维护人员。而这些异常在开发测试阶段人为干涉或者模拟是一个非常繁杂的工作，而 Istio 提供的 HTTPFaultInjection 就是为了解决在开发测试节点调试难问题而设计的。它可以用来对服务进行故障注入，大家可以通过配置不同的 HTTPFaultInjection 策略来检测自己服务的健壮性以及对于异常处理的能力而不需要花费过多的精力。
-
-HTTPFaultInjection 是 VirtualService 中的一种规则，它包括了两种类型的故障注入：
-
-- **abort**：非必配项，配置一个 Abort 类型的对象。用来注入请求异常类故障。简单的说，就是认为模拟上游服务返回异常时，我们自己的服务是否具备处理能力。
-- **delay**：非必配项，配置一个 Delay 类型的对象。用来注入延时类故障。通俗一点讲，就是人为模拟上游服务的响应时间，看在这个时间内无响应的情况下，我们自己的服务是否具备容错容灾的能力。
-
-### HTTPFaultInjection.Abort：
-
-- **httpStatus**：必配项，是一个整型的值。表示注入 HTTP 请求的故障状态码。
-- **percentage**：非必配项，是一个 Percent 类型的值。表示对多少请求进行故障注入。如果不指定改配置，那么所有请求都将会被注入故障。
-- **percent**：已经过期的一个配置，与 percentage 配置功能一样，已经被 percentage 代替。
-
-如下的配置表示对 v1 版本的 ratings.prod.svc.cluster.local 服务访问的时候进行故障注入，0.1表示有千分之一的请求被注入故障， 400 表示故障为该请求的 HTTP 响应码为 400 。
-
-```yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: ratings-route
-spec:
-  hosts:
-  - ratings.prod.svc.cluster.local
-  http:
-  - route:
-    - destination:
-        host: ratings.prod.svc.cluster.local
-        subset: v1
-    fault:
-      abort:
-        percentage:
-          value: 0.1
-        httpStatus: 400
-```
-
-### HTTPFaultInjection.Delay：
-
-- **fixedDelay**：比配置项，表示请求响应的模拟处理时间。格式为：1h/1m/1s/1ms， 不能小于 1ms。
-- **percentage**：非必配项，是一个 Percent 类型的值。表示对多少请求进行故障注入。如果不指定改配置，那么所有请求都将会被注入故障。
-- **percent**：已经过期的一个配置，与 percentage 配置功能一样，已经被 percentage 代替。
-
-如下的配置表示对 v1 版本的 reviews.prod.svc.cluster.local 服务访问的时候进行故障注入，0.1 表示有千分之一的请求被注入故障，5s 表示故障为该请求的HTTP配置 5s 的延迟。
-
-```yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: reviews-route
-spec:
-  hosts:
-  - reviews.prod.svc.cluster.local
-  http:
-  - match:
-    - sourceLabels:
-        env: prod
-    route:
-    - destination:
-        host: reviews.prod.svc.cluster.local
-        subset: v1
-    fault:
-      delay:
-        percentage:
-          value: 0.1
-        fixedDelay: 5s
-```
 
 ### HTTPRouteDestination：
 

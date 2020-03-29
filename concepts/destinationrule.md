@@ -5,7 +5,7 @@ reviewers: [""]
 
 # DestinationRule
 
-DestinationRule 是 Istio 中定义的另外一个比较重要的资源， 它通常和 VirtualService 一起使用，来确定当请求路由来临的时候应该访问哪一个 Service 服务，同时也来控制负载均衡的调配，负责对具体的 Endpoint 中 Envoy 代理的 Sidecar 进行连接，并且提供异常点检测，健康检测，熔断控制等。先通过几个例子来认识一下它吧。
+DestinationRule 是 Istio 中定义的另外一个比较重要的资源， 它通常和 `VirtualService` 一起使用，来确定当请求路由来临的时候应该访问哪一个服务，同时也来控制负载均衡的调配，负责对具体的端点中的 Envoy 代理进行连接，并且提供异常点检测，健康检测，熔断控制等。先通过几个例子来认识一下它吧。
 
 下面便是一个简单的配置例子：
 
@@ -22,7 +22,7 @@ spec:
 
 ```
 
-从上面的配置中可以看出，在它的 metadata 中定义了的 name 叫做 “bookinfo-ratings”，这个 name 通常被使用在 VirtualService 的 destination 中。它定义的 host 为 “ratings.prod.svc.cluster.local”，表示流量将被转发到 ratings.prod 这个服务中去。它的路由的全局负载均衡策略是 LEAST_CONN（最少连接）策略。
+从上面的配置中可以看出，在它的 metadata 中定义了的 `name` 叫做 `bookinfo-ratings`，这个 `name` 通常被使用在 VirtualService 的 `destination` 配置中。它定义的 `host` 为 `ratings.prod.svc.cluster.local`，表示流量将被转发到 `ratings.prod` 这个服务中去。它的路由的全局负载均衡策略是 `LEAST_CONN`（最少连接）策略。
 
 下面列举出第二个例子：
 
@@ -45,20 +45,20 @@ spec:
         simple: ROUND_ROBIN
 ```
 
-这个例子也是一个 DestinationRule 的配置，不同于上一个例子的是，在这个例子中，我们定义了 ratings.prod 服务的全部路负载均衡策略是 LEAST_CONN（最少连接）策略，但是在具体的 subsets 又配置了如果匹配到 v3 版本的 ratings.prod 服务时，它使用 ROUND_ROBIN（轮询）的负载均衡策略。
+这个例子也是一个 DestinationRule 的配置，不同于上一个例子的是，在这个例子中，我们定义了 ratings.prod 服务的全部路负载均衡策略是 `LEAST_CONN`（最少连接）策略，但是在具体的 `subsets` 又配置了如果匹配到 `v3` 版本的 `ratings.prod` 服务时，它使用 `ROUND_ROBIN`（轮询）的负载均衡策略。
 
 接下来，我们介绍下 DestinationRule 中的配置项：
 
 ### ConnectionPoolSettings：
 
-ConnectionPoolSettings 用来配置与服务的 Sidecar 代理 Envoy 之间的连接属性。包括最大连接数，连接超时时间，连接保持时间等一系列的配置，这些配置实际上 Envoy 的配置。更详细的配置说明可参考 https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking。
+ConnectionPoolSettings 用来配置与服务的 Envoy 代理之间的连接属性。包括最大连接数，连接超时时间，连接保持时间等一系列的配置，这些配置实际上 Envoy 的配置。更详细的配置说明可参考 https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/circuit_breaking。
 
-- **tcp**：非必配项，配置一个 TCPSettings 类型的值，它包括HTTP与TCP协议的公共连接配置。
-- **http**：非必配项，配置一个 HTTPSettings 类型值，它用来专门对HTTP协议的连接进行配置。
+- **tcp**：非必配项，配置一个 `TCPSettings` 类型的值，它包括 HTTP/TCP 协议的公共连接配置。
+- **http**：非必配项，配置一个 `HTTPSettings` 类型值，它用来专门对HTTP协议的连接进行配置。
 
-这里需要注意的， tcp 中的部分配置，也会作用在HTTP协议的请求，比如 maxConnections 配置等。
+这里需要注意的， tcp 中的部分配置，也会作用在HTTP协议的请求，比如 `maxConnections` 配置等。
 
-下面这个配置表示对 myredissrv.prod.svc.cluster.local 服务进行连接池的一些配置，表示最大连接数为100，连接超时时间为 30ms。连接保持时间为 7200s。
+下面这个配置表示对 `myredissrv.prod.svc.cluster.local` 服务进行连接池的一些配置，表示最大连接数为`100`，连接超时时间为 `30ms`。连接保持时间为 `7200s`。
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -79,13 +79,13 @@ spec:
 
 ### ConnectionPoolSettings.HTTPSettings：
 
-针对HTTP1.1 / HTTP2 / GRPC的连接配置属性。
+针对`HTTP1.1 / HTTP2 / GRPC`的连接配置属性。
 
-- **http1MaxPendingRequests**： 非必配项，配置一个int类型的值。表示 HTTP请求的最大请求队列数。默认值为 2^32 - 1 。
-- **http2MaxRequests**： 非必配项，配置一个int类型的值。表示HTTP2协议的最大请求数。默认值为 2^32 - 1 。
-- **maxRequestsPerConnection**： 非必配项，配置一个int类型的值。每个连接处理请求的最大个数， 如果将该值设置为1，则表示禁用request请求连接的 keepalive属性。如果设置为 0 ， 表示不限制。
+- **http1MaxPendingRequests**： 非必配项，配置一个 int 类型的值。表示 HTTP请求的最大请求队列数。默认值为 `2^32 - 1` 。
+- **http2MaxRequests**： 非必配项，配置一个int类型的值。表示HTTP2协议的最大请求数。默认值为 `2^32 - 1` 。
+- **maxRequestsPerConnection**： 非必配项，配置一个int类型的值。每个连接处理请求的最大个数， 如果将该值设置为`1`，则表示禁用request 请求连接的 `Keep-alive`属性。如果设置为 `0` ， 表示不限制。
 - **axRetries**： 非必配项，配置一个int类型的值。表示请求最大重试次数。
-- **idleTimeout**： 非必配项， 配置一个Duration类型的值，表示连接的空闲回收时间。默认时间为1个小时，即如果该连接在1个小时之内没有处理请求，则关闭该连接。
+- **idleTimeout**： 非必配项， 配置一个Duration类型的值，表示连接的空闲回收时间。默认时间为1h，即如果该连接在1个小时之内没有处理请求，则关闭该连接。
 - **h2UpgradePolicy**：指定如果HTTP1.1 协议的连接升级到HTTP2协议时的策略。
 
 ### ConnectionPoolSettings.HTTPSettings.H2UpgradePolicy：
@@ -100,7 +100,7 @@ HTTP1.1 协议的连接升级到HTTP2协议时的策略选择。
 
 连接池TCP协议相关的一些配置。
 
-- **maxConnections**： 非必配项，配置一个int类型的值，表示最大连接数。默认是2^32-1。 注意这个配置既作用于TCP协议的连接上，也作用在HTTP1协议的连接上。
+- **maxConnections**： 非必配项，配置一个int类型的值，表示最大连接数。默认是`2^32-1`。 注意这个配置既作用于TCP协议的连接上，也作用在HTTP1协议的连接上。
 - **connectTimeout**： 非必配项，配置一个 Duration 类型的值。表示TCP连接的超时时间。
 - **tcpKeepalive**： 非必配项，配置一个 TcpKeepalive 类型的值，用来配置keep-alive属性。
 
@@ -108,15 +108,15 @@ HTTP1.1 协议的连接升级到HTTP2协议时的策略选择。
 
 用于配置TCP keep-alive属性。
 
-- **probes**：非必配项，配置一个int类型的值，表示连接存活探针最大探测次数，默认使用操作系统自己的配置。比如 Linux 的配置次数为 9 。
-- **time**：非必配项，配置一个 Duration 类型的值。表示连接在空闲多长时间之后开始发起存活探针检测。默认使用操作系统自己的配置。比如 Linux 的配置次数为 7200s 。
-- **interval**：非必配项，配置一个Duration类型的值。表示探针检测间隔时间。默认使用操作系统自己的配置。比如 Linux 的配置次数为 75s。
+- **probes**：非必配项，配置一个int类型的值，表示连接存活探针最大探测次数，默认使用操作系统自己的配置。比如 Linux 的配置次数为 `9` 。
+- **time**：非必配项，配置一个 Duration 类型的值。表示连接在空闲多长时间之后开始发起存活探针检测。默认使用操作系统自己的配置。比如 Linux 的配置次数为 `7200s` 。
+- **interval**：非必配项，配置一个Duration类型的值。表示探针检测间隔时间。默认使用操作系统自己的配置。比如 Linux 的配置次数为 `75s`。
 
 ### DestinationRule：
 
 DestinationRule 是接收到请求之后，指定请求转发路由的最高层配置。它具体有以下这些属性：
 
-- **host**：必配项，配置一个string类型的值。是一个在服务注册中心注册过的 Service 名称。这个服务可以是 Kubernetes 的 services, 或者 Consul 中的 services 等。同样也可以是一个 ServiceEntry 类型的名称。这里需要注意，当我们配置短域名时， Istio 在补全域名的时候将与 DestinationRule 所应用的 Namespace 有关。 比如，我们配置  hosts: reviews， 当它在 default 命名空间下应用时，hosts 将会被补全为 reviews.default.svc.cluster.local， 当它在 test 命名空间下应用时， hosts 将会被补全为 reviews.test.svc.cluster.local 。
+- **host**：必配项，配置一个string类型的值。是一个在Istio服务注册表注册过的服务名称。这个服务可以是 Kubernetes 的 services, 或者 Consul 中的 services 等。同样也可以是一个 `ServiceEntry` 类型的名称。这里需要注意，当我们配置短域名时， Istio 在补全域名的时候将与 DestinationRule 所应用的 Namespace 有关。 比如，我们配置  hosts: reviews， 当它在 default 命名空间下应用时，`hosts` 将会被补全为 `reviews.default.svc.cluster.local`， 当它在 `test` 命名空间下应用时， `hosts` 将会被补全为 reviews.test.svc.cluster.local 。
 - **trafficPolicy**：非必配项，配置一个 TrafficPolicy 类型的值。表示处理请求连接的一些配置。包括负载均衡，连接池配置，以及异常点检测等。
 - **subsets**： 非必配项，配置一个 Subset[] 类型的值，表示服务子集。在里面可以指定不同版本的服务以及提供覆盖公共的请求策略的功能。
 - **exportTo**： 非必配项，配置一个string[]类型的值，表示该规则应用的 Namespace 。如果不设置，则表示当前 DestinationRule应用到所有的 Namespace下。
@@ -127,7 +127,7 @@ DestinationRule 是接收到请求之后，指定请求转发路由的最高层�
 
 连接请求时的负载均衡配置，它最后将被翻译成 Envoy 的负载均衡策略并应用到每一个 服务的 Endpoint上去。想要了解更多的配置规则，请参考 Envoy 的负载均衡配置文档： https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/load_balancing。
 
-正如下面这个简单的例子，它使用ROUND_ROBIN（轮询）的负载均衡策略对 ratings.prod.svc.cluster.local 服务进行转发。
+正如下面这个简单的例子，它使用`ROUND_ROBIN`（轮询）的负载均衡策略对 `ratings.prod.svc.cluster.local` 服务进行转发。
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -142,7 +142,7 @@ spec:
 
 ```
 
-下面这个例子，则表示负载策略使用session粘性的方式去做，而session粘性的Key的hash值使用用户的 cookie 来计算。
+下面这个例子，则表示负载策略使用session粘性的方式去做，而session粘性的 Key 的哈希值使用用户的 cookie 来计算。
 
 ```yaml
  apiVersion: networking.istio.io/v1alpha3
@@ -240,41 +240,6 @@ LocalityLoadBalancerSetting有以下几个属性值
 - **from**：故障开始区域名
 - **to**：要将请求转移到的区域名
 
-### OutlierDetection：
-
-OutlierDetection 是 Istio 框架对`Circuit breaker`的一种实现。它的功能类似于 Spring Cloud Hystrix 。 他们的基本原理都是当请求压力超过服务能够承受的最大压力时，需要及时的熔断服务以保证服务端不会奔溃。在微服务的架构里，熔断机制是非常重要的一环，它保证了当流量过大时可以保证在服务支撑能力之内的一部分请求是可以正常运转的，而不至于由于某一个服务的奔溃而导致微服务的雪崩效应。Istio构架设计中，当服务端按照一定规则返回5xx的请求码时将会触发熔断机制。比如`502`,`503`,`504`等。这里需要注意的是`500`状态码不会触发熔断机制。Istio团队认为`500`属于服务内部错误，不在熔断检测的范畴之内。
-
-- **consecutiveGatewayErrors**： 非必配项，配置一个UInt32Value类型的值。表示从连接池连续返回的网关类型错误的个数，这些错误包括`502`,`503`,`504`等状态，注意 consecutiveGatewayErrors 与 continuous5xxerrors 是可以单独使用或者一起使用的，因为 consecutiveGatewayErrors 的错误也属于 continuous5xxerrors， 所以当 consecutiveGatewayErrors 发生次数加1的时候，continuous5xxerrors 的值也会加1.同时当 consecutiveGatewayErrors 的值大于等于 continuous5xxerrors 的值时，continuous5xxerrors 配置的值将优先起作用。当它的值被设置为0时，表示关闭此项配置。
-- **consecutive5xxErrors**：非必配项，配置一个UInt32Value类型的值。表示连续从连接池返回的5xx请求码的个数。这些错误包括`502`,`503`,`504`等状态，同理，它可以与 consecutiveGatewayErrors 一起使用或单独使用。该配置的默认值是5，它不能被设置成0。
-- **interval**：非必配项，配置一个 Duration 类型的值。表示驱逐服务的时间间隔。配置格式为：1h/1m/1s/1ms， 最小不能小于1ms。通俗讲就是讲就是计算各个异常点检测占比数时候取的时间单位。
-- **baseEjectionTime**：非必配项，配置一个 Duration 类型的值。表示服务被驱逐的驱逐时间基量，一个服务被驱逐的时间 = 最小驱逐时间间隔 * 驱逐次数。这就是为什么一个服务被驱逐的次数越多，则驱逐的时间越长的原因。所以这里 baseEjectionTime 也可以表示 服务第一次被驱逐时驱逐的时长。
-- **maxEjectionPercent**：非必填项，配置一个int32类型的值。表示最大驱逐服务的在连接池中的占比。它的默认值为10%， 表示不管流量压力多大，其中最多只有10%的服务被驱逐。
-- **minHealthPercent**：非必填项，配置一个int32类型的值。表示服务连接池中最小健康的服务占比，当服务连接池中健康的服务占比大于该值的配置时，才会开启熔断检测功能。当该值设置成0%时则表示该项配置无效，即直接开启异常点检测功能。
-
-**Tips**: consecutiveGatewayErrors 配置与 consecutive5xxErrors 配置是 Istio 1.5 新增的配置，而在1.5版本之前，只有一个参数叫做 consecutiveErrors。 也就是说，1.5版本对返回5xx的错误设置了一个子集。这样在特定的坏境中，对于熔断检测的控制粒度将更精细。
-
-在下面的例子中，定义了一个异常点检测的规则，它表示计算 reviews.prod.svc.cluster.local 服务在5分钟之内它返回5xx异常的错误数，当连续7次返回时驱逐该服务，第一次驱逐的时间为15分钟。当第一次驱逐时间结束后，该服务将继续转发流量，当第二次检测又发现有连续7次返回5xx错误时，再次驱逐它，这次它的驱逐时间将变成 15 * 2 = 30分钟。
-
-```yaml
-apiVersion: networking.istio.io/v1alpha3
-kind: DestinationRule
-metadata:
-  name: reviews-cb-policy
-spec:
-  host: reviews.prod.svc.cluster.local
-  trafficPolicy:
-    connectionPool:
-      tcp:
-        maxConnections: 100
-      http:
-        http2MaxRequests: 1000
-        maxRequestsPerConnection: 10
-    outlierDetection:
-      consecutive5xxErrors: 7
-      interval: 5m
-      baseEjectionTime: 15m
-```
-
 ### Subset：
 
 Subset用来配置服务子集，即配置同一个服务不同版本的实例。它是 DestinationRule 配置中比较出彩的地方，通过Subset配置，以及配置 VirtualService，我们可以很轻松的做到对不同版本服务的访问。它通过一个或者多个labels属性来确定跟那个实例的 Envoy 建立连接。
@@ -308,7 +273,7 @@ spec:
 
 用于SSL/TLS相关的上游连接配置，它最终也是被翻译为 Envoy 的 TLS 路由规矩而应用。这些配置是 TCP 与 HTTP上游通用的配置。
 
-下面的例子配置了一个客户端使用单向 TLS 连接与 "*.foo.com" 匹配的主机进行通讯，SIMPLE 表示单项认证模式。
+下面的例子配置了一个客户端使用单向 TLS 连接与 `*.foo.com` 匹配的主机进行通讯，SIMPLE 表示单项认证模式。
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -324,7 +289,7 @@ spec:
 
 
 
-下面的例子表示使用 Istio 双向TLS进行会话，如果将mode配置成 ISTIO_MUTUAL 的模式进行会话，Istio 会自动帮助服务管理证书，是非常方便的，ISTIO_MUTUAL 表示双向TLS认证模式。
+下面的例子表示使用 Istio 双向TLS进行会话，如果将`mode`配置成 `ISTIO_MUTUAL` 的模式进行会话，Istio 会自动帮助服务管理证书，是非常方便的，`ISTIO_MUTUAL` 表示双向TLS认证模式。
 
 ```yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -360,11 +325,11 @@ spec:
 TLSSettings有以下这些属性配置：
 
 - **mode**：必配项，配置一个 TLSmode 类型的值，TLS会话模式，它确定了会话的执行方式。
-- **clientCertificate**：非必配项，配置一个string类型的值，当 mode 为 MUTUAL 时，此项配置是必须的。表示存放客户端认证证书的路径，当 mode 配置为 ISTIO_MUTUAL时，此项配置必须为空。
-- **privateKey**：非必配项，配置一个 stirng 类型的值，当 mode 为 MUTUAL 时，此项配置是必须的。表示客户端存放私有秘钥的路径，当mode配置为 ISTIO_MUTUAL时，此项配置必须为空。
+- **clientCertificate**：非必配项，配置一个string类型的值，当 mode 为 `MUTUAL` 时，此项配置是必须的。表示存放客户端认证证书的路径，当 `mode` 配置为 `ISTIO_MUTUAL`时，此项配置必须为空。
+- **privateKey**：非必配项，配置一个 stirng 类型的值，当 `mode` 为 `MUTUAL` 时，此项配置是必须的。表示客户端存放私有秘钥的路径，当`mode`配置为 `ISTIO_MUTUAL`时，此项配置必须为空。
 - **caCertificates**： 可选项，配置一个string类型的值，表示提供证书的颁发机构认证证书的路径，如果为空，则代理不会验证认证服务器证书。
 - **subjectAltNames**： 非必配项，配置一个string[]类型的值，表示验证证书中 subject 身份的备用名称列表，如果该配置项被指定，则代理将会使用这个列表中的一个验证服务器证书 subject 的别名，同时如果这个参数指定了则 ServiceEntry 中指定的 subjectAltnames 将会被覆盖。
-- **sni**：非必配项，配置一个string类型的值，表示在TLS握手时显示给服务器的 SNI 值。
+- **sni**：非必配项，配置一个string类型的值，表示在TLS握手时显示给服务器的 `SNI` 值。
 
 ### TLSSettings.TLSmode：
 

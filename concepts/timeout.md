@@ -32,5 +32,5 @@ spec:
 
 ```
 
-> **提示**：在使用请求超时配置的时候，可以配置VirtualService的HTTPFaultInjection配置进行测试。调试起来会更香。
+**提示**：在使用请求超时配置的时候，可以配合 VirtualService 的 HTTPFaultInjection 配置进行测试，调试起来会更香。
 
